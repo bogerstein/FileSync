@@ -1,24 +1,24 @@
 package bogerstein.filesync;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Main {
 	
+	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+	
 	public static void main(String[] args) {
-		final Map<String, String> parsedCommandLineArgs = CommandLineArgumentParser.parse(args);
-		loadCommandLineArgsIntoSystemProperties(parsedCommandLineArgs);
+		LOGGER.info("FileSync starting...");
+		
+		CommandLineArgumentParser.loadCommandLineArgsIntoSystemProperties(args);
 		
 		final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("spring.filesync.xml");
 		// The context opens file listeners, so we shouldn't hit the close
 		appContext.close();
+		
+		LOGGER.info("FileSync shutting down...");
 	}
 
-	private static void loadCommandLineArgsIntoSystemProperties(Map<String, String> commandLineArgs) {
-		for (Entry<String, String> commandLineArg : commandLineArgs.entrySet()) {
-			System.setProperty(commandLineArg.getKey(), commandLineArg.getValue());
-		}
-	}
+	
 }

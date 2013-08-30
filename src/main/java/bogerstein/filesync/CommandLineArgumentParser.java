@@ -2,27 +2,33 @@ package bogerstein.filesync;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
 public class CommandLineArgumentParser {
-
-	private static final String REMOTE_DIRECTORY_OPTION = "-r"; // Required
-	private static final String REMOTE_HOST_OPTION = "-h"; // Required
-	private static final String REMOTE_USER_OPTION = "-u"; // Optional
-	private static final String REMOTE_PASS_OPTION = "-p"; // Optional
-	private static final String LOCAL_DIRECTORY_OPTION = "-l"; // Required
-	
-	public static Map<String, String> parse(final String[] args) {
+	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineArgumentParser.class);
+	public static void loadCommandLineArgsIntoSystemProperties(final String[] args) {
 		if (args.length % 2 != 0) {
 			throw new RuntimeException("Expected an even number of command line args, received " + args.length + ". " + Arrays.toString(args));
 		}
 		
-		final Map<String, String> parsedCommandLineArguments = Maps.newHashMap();
-		for (String arg : args) {
-			System.out.println(arg);
+		final Map<FileSyncProperty, String> commandLineArgs = parse(args);
+		for (Entry<FileSyncProperty, String> commandLineArg : commandLineArgs.entrySet()) {
+			LOGGER.debug("Loading property: " + commandLineArg.getKey().getKey());
+			System.setProperty(commandLineArg.getKey().getKey(), commandLineArg.getValue());
 		}
-		
-		return parsedCommandLineArguments;
+	}
+	
+	private static Map<FileSyncProperty, String> parse(final String[] args) {
+		final Map<FileSyncProperty, String> parsedCommandLineArgs = Maps.newHashMap();
+		for (int i = 0; i < args.length; i += 2) {
+			final FileSyncProperty property = FileSyncProperty.getProperty(args[i]);
+			parsedCommandLineArgs.put(property, args[i+1]);
+		}
+		return parsedCommandLineArgs;
 	}
 }
